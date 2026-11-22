@@ -1,0 +1,96 @@
+{% extends "catalog/base.html" %}
+{% block title %}Каталог — MyCinema{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="eyebrow">PERSONAL WATCH LIBRARY</p>
+    <h1>Твоя <span>кинематека.</span></h1>
+    <p class="muted">Всё, что ты посмотрел, оценил и хочешь сохранить.</p>
+  </div>
+  <a class="button" href="{% url 'item_create' %}">＋ Добавить произведение</a>
+</section>
+
+<form class="filters" method="get">
+  <input name="q" value="{{ query }}" placeholder="Поиск по названию...">
+  <select name="genre"><option value="">Все жанры</option>{% for genre in genres %}
+    <option value="{{ genre.id }}" {% if selected_genre == genre.id|stringformat:"s" %}selected{% endif %}>{{ genre.name }}</option>
+  {% endfor %}</select>
+  <select name="country">
+      <option value="">Все страны</option>
+      {% for country in countries %}
+          <option value="{{ country.id }}" {% if selected_country == country.id|stringformat:"s" %}selected{% endif %}>
+              {{ country.name }}
+          </option>
+      {% endfor %}
+  </select>
+  <select name="year"><option value="">Любой год</option>{% for y in years %}
+    <option value="{{ y }}" {% if selected_year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+  {% endfor %}</select>
+  <select name="sort">
+    <option value="-year" {% if selected_sort == "-year" %}selected{% endif %}>Сначала новые</option>
+    <option value="year" {% if selected_sort == "year" %}selected{% endif %}>Сначала старые</option>
+    <option value="title" {% if selected_sort == "title" %}selected{% endif %}>По названию</option>
+    <option value="-personal_rating" {% if selected_sort == "-personal_rating" %}selected{% endif %}>Моя оценка</option>
+    <option value="-imdb_rating" {% if selected_sort == "-imdb_rating" %}selected{% endif %}>IMDb</option>
+    <option value="-kinopoisk_rating" {% if selected_sort == "-kinopoisk_rating" %}selected{% endif %}>Кинопоиск</option>
+  </select>
+  <button class="button" type="submit">Применить</button>
+</form>
+
+<div class="section-heading"><div><p class="eyebrow">YOUR COLLECTION</p><h2>{% if selected_category %}{% for value,label in categories %}{% if value == selected_category %}{{ label }}{% endif %}{% endfor %}{% else %}Все произведения{% endif %}</h2></div><span class="muted">{{ items|length }} записей</span></div>
+
+<div class="movie-grid">
+{% for item in items %}
+  <a class="movie-card" href="{% url 'item_detail' item.pk %}">
+    <div class="poster">
+      {% if item.poster_url %}<img src="{{ item.poster_url }}" alt="Постер {{ item.title }}" loading="lazy">
+      {% else %}<div class="poster-placeholder"><span>MY</span><small>NO POSTER</small></div>{% endif %}
+      <span class="category-tag">{{ item.get_category_display }}</span>
+    </div>
+    <div class="movie-info">
+      <h3>{{ item.title }}</h3>
+      <p class="muted">{{ item.year|default:"Год не указан" }}</p>     
+      <div class="card-meta">
+          {% if item.countries.exists %}
+              <div>
+                  <span>Страна:</span>
+                  {% for country in item.countries.all %}
+                      {{ country.name }}{% if not forloop.last %}, {% endif %}
+                  {% endfor %}
+              </div>
+          {% endif %}
+
+          {% if item.genres.exists %}
+              <div>
+                  <span>Жанр:</span>
+                  {% for genre in item.genres.all %}
+                      {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                  {% endfor %}
+              </div>
+          {% endif %}
+      </div> 
+      <div class="ratings">
+          <span>IMDb <b>{% if item.imdb_rating != None %}{{ item.imdb_rating|floatformat:1 }}/10{% else %}—{% endif %}</b></span>
+          <span>КП <b>{% if item.kinopoisk_rating != None %}{{ item.kinopoisk_rating|floatformat:1 }}/10{% else %}—{% endif %}</b></span>
+      </div>
+      <div class="my-rating">
+          {% if item.personal_rating %}
+              {% if item.personal_rating <= 4 %}
+                  <span class="rating-red">{{ item.personal_rating }}</span>
+              {% elif item.personal_rating <= 7 %}
+                  <span class="rating-yellow">{{ item.personal_rating }}</span>
+              {% else %}
+                  <span class="rating-green">{{ item.personal_rating }}</span>
+              {% endif %}
+              <span class="rating-out-of">/10</span>
+          {% else %}
+              <span class="muted">Нет оценки</span>
+          {% endif %}
+      </div>
+    </div>
+  </a>
+{% empty %}
+  <div class="empty-state"><div>✦</div><h3>Пока здесь пусто</h3><p>Добавь первое произведение в свою кинематеку.</p><a class="button" href="{% url 'item_create' %}">Добавить</a></div>
+{% endfor %}
+</div>
+{% endblock %}

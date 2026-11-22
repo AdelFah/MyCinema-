@@ -1,0 +1,419 @@
+
+{% extends "catalog/base.html" %}
+
+{% block title %}Главная — MyCinema{% endblock %}
+
+{% block content %}
+
+<!-- ГЛАВНАЯ КАРУСЕЛЬ РЕКОМЕНДАЦИЙ -->
+
+{% if featured_items %}
+
+<section class="home-featured" data-featured-carousel>
+
+    <div class="featured-track">
+
+        {% for item in featured_items %}
+
+        <article class="featured-slide {% if forloop.first %}is-active{% endif %}"
+                 aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
+
+            <div class="featured-backdrop"
+                 {% if item.backdrop_url or item.poster_url %}
+                 style="background-image:
+                    linear-gradient(
+                        90deg,
+                        rgba(7, 11, 9, 0.97) 5%,
+                        rgba(7, 11, 9, 0.88) 45%,
+                        rgba(7, 11, 9, 0.35) 100%
+                    ),
+                    url('{{ item.backdrop_url|default:item.poster_url }}');"
+                 {% endif %}>
+
+                <div class="featured-content">
+
+                    <p class="eyebrow">MYCINEMA РЕКОМЕНДУЕТ</p>
+
+                    <span class="featured-category">
+                        {{ item.get_category_display }}
+                    </span>
+
+                    <h1>{{ item.title }}</h1>
+
+                    <p class="featured-meta">
+                        {% if item.year %}
+                            {{ item.year }}
+                        {% endif %}
+
+                        {% if item.personal_rating %}
+                            · Моя оценка: {{ item.personal_rating }}/10
+                        {% endif %}
+                    </p>
+
+                    {% if item.description %}
+                        <p class="featured-description">
+                            {{ item.description|truncatechars:220 }}
+                        </p>
+                    {% else %}
+                        <p class="featured-description">
+                            Возможно, сегодня самое время познакомиться с этим произведением.
+                        </p>
+                    {% endif %}
+
+                    <a class="button featured-button"
+                       href="{% url 'item_detail' item.pk %}">
+                        Подробнее
+                    </a>
+
+                </div>
+
+            </div>
+
+        </article>
+
+        {% endfor %}
+
+    </div>
+
+    {% if featured_items|length > 1 %}
+
+    <div class="featured-controls">
+
+        <button type="button"
+                class="featured-arrow"
+                data-featured-prev
+                aria-label="Предыдущая рекомендация">
+            ‹
+        </button>
+
+        <div class="featured-dots">
+
+            {% for item in featured_items %}
+
+            <button type="button"
+                    class="featured-dot {% if forloop.first %}is-active{% endif %}"
+                    data-featured-dot="{{ forloop.counter0 }}"
+                    aria-label="Рекомендация {{ forloop.counter }}">
+            </button>
+
+            {% endfor %}
+
+        </div>
+
+        <button type="button"
+                class="featured-arrow"
+                data-featured-next
+                aria-label="Следующая рекомендация">
+            ›
+        </button>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% else %}
+
+<section class="home-empty">
+
+    <p class="eyebrow">MYCINEMA</p>
+
+    <h1>Твоя кинематека начинается здесь.</h1>
+
+    <p class="muted">
+        Добавь произведения, и здесь появятся рекомендации.
+    </p>
+
+    <a class="button" href="{% url 'item_create' %}">
+        ＋ Добавить произведение
+    </a>
+
+</section>
+
+{% endif %}
+
+
+<!-- ЧЕТЫРЕ КАТЕГОРИИ БИБЛИОТЕКИ -->
+
+{% for shelf in shelves %}
+
+<section class="home-shelf">
+
+    <div class="section-heading">
+
+        <div>
+            <p class="eyebrow">ТВОЯ КОЛЛЕКЦИЯ</p>
+            <h2>{{ shelf.label }}</h2>
+        </div>
+
+        <div class="shelf-actions">
+
+            <div class="shelf-controls">
+
+                <button type="button"
+                        class="shelf-arrow"
+                        data-scroll-direction="left"
+                        aria-label="Прокрутить влево">
+                    ‹
+                </button>
+
+                <button type="button"
+                        class="shelf-arrow"
+                        data-scroll-direction="right"
+                        aria-label="Прокрутить вправо">
+                    ›
+                </button>
+
+            </div>
+
+            <a class="shelf-more"
+               href="{% url 'category_catalog' shelf.value %}">
+                Смотреть всё →
+            </a>
+
+        </div>
+
+    </div>
+
+    {% if shelf.items %}
+
+    <div class="shelf-scroll">
+
+        {% for item in shelf.items %}
+
+        <a class="movie-card shelf-card"
+           href="{% url 'item_detail' item.pk %}">
+
+            <div class="poster">
+
+                {% if item.poster_url %}
+
+                    <img src="{{ item.poster_url }}"
+                         alt="Постер {{ item.title }}"
+                         loading="lazy">
+
+                {% else %}
+
+                    <div class="poster-placeholder">
+                        <span>MY</span>
+                        <small>NO POSTER</small>
+                    </div>
+
+                {% endif %}
+
+                <span class="category-tag">
+                    {{ item.get_category_display }}
+                </span>
+
+            </div>
+
+            <div class="movie-info">
+
+                <h3>{{ item.title }}</h3>
+
+                <p class="muted">
+                    {{ item.year|default:"Год не указан" }}
+                </p>
+
+                <div class="ratings">
+
+                    <span>
+                        IMDb
+                        <b>
+                            {% if item.imdb_rating != None %}
+                                {{ item.imdb_rating|floatformat:1 }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </b>
+                    </span>
+
+                    <span>
+                        КП
+                        <b>
+                            {% if item.kinopoisk_rating != None %}
+                                {{ item.kinopoisk_rating|floatformat:1 }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </b>
+                    </span>
+
+                </div>
+
+            </div>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <p class="muted shelf-empty">
+        В этом разделе пока нет произведений.
+        <a href="{% url 'item_create' %}">Добавить произведение</a>
+    </p>
+
+    {% endif %}
+
+</section>
+
+{% endfor %}
+
+
+<!-- JAVASCRIPT: КАРУСЕЛИ -->
+
+<script>
+(function () {
+
+    // ГЛАВНАЯ КАРУСЕЛЬ
+
+    const carousel = document.querySelector("[data-featured-carousel]");
+
+    if (carousel) {
+
+        const slides = Array.from(
+            carousel.querySelectorAll(".featured-slide")
+        );
+
+        const dots = Array.from(
+            carousel.querySelectorAll("[data-featured-dot]")
+        );
+
+        const prevButton = carousel.querySelector("[data-featured-prev]");
+        const nextButton = carousel.querySelector("[data-featured-next]");
+
+        let currentIndex = 0;
+        let timer = null;
+
+        function showSlide(index) {
+
+            if (slides.length === 0) return;
+
+            currentIndex = (index + slides.length) % slides.length;
+
+            slides.forEach((slide, i) => {
+
+                const active = i === currentIndex;
+
+                slide.classList.toggle("is-active", active);
+                slide.setAttribute(
+                    "aria-hidden",
+                    active ? "false" : "true"
+                );
+
+            });
+
+            dots.forEach((dot, i) => {
+                dot.classList.toggle("is-active", i === currentIndex);
+            });
+
+        }
+
+        function stopTimer() {
+
+            if (timer !== null) {
+                clearInterval(timer);
+                timer = null;
+            }
+
+        }
+
+        function startTimer() {
+
+            stopTimer();
+
+            if (slides.length > 1) {
+
+                timer = setInterval(function () {
+                    showSlide(currentIndex + 1);
+                }, 7000);
+
+            }
+
+        }
+
+        if (prevButton) {
+
+            prevButton.addEventListener("click", function () {
+                showSlide(currentIndex - 1);
+                startTimer();
+            });
+
+        }
+
+        if (nextButton) {
+
+            nextButton.addEventListener("click", function () {
+                showSlide(currentIndex + 1);
+                startTimer();
+            });
+
+        }
+
+        dots.forEach(function (dot, index) {
+
+            dot.addEventListener("click", function () {
+                showSlide(index);
+                startTimer();
+            });
+
+        });
+
+        carousel.addEventListener("mouseenter", stopTimer);
+        carousel.addEventListener("mouseleave", startTimer);
+
+        carousel.addEventListener("focusin", stopTimer);
+
+        carousel.addEventListener("focusout", function (event) {
+
+            if (!carousel.contains(event.relatedTarget)) {
+                startTimer();
+            }
+
+        });
+
+        showSlide(0);
+        startTimer();
+
+    }
+
+
+    // КАРУСЕЛИ КАТЕГОРИЙ
+
+    document.querySelectorAll(".home-shelf").forEach(function (shelf) {
+
+        const scrollContainer = shelf.querySelector(".shelf-scroll");
+
+        if (!scrollContainer) return;
+
+        const buttons = shelf.querySelectorAll(
+            "[data-scroll-direction]"
+        );
+
+        buttons.forEach(function (button) {
+
+            button.addEventListener("click", function () {
+
+                const direction = button.dataset.scrollDirection;
+
+                const distance = scrollContainer.clientWidth * 0.8;
+
+                scrollContainer.scrollBy({
+                    left: direction === "right" ? distance : -distance,
+                    behavior: "smooth"
+                });
+
+            });
+
+        });
+
+    });
+
+})();
+</script>
+
+{% endblock %}

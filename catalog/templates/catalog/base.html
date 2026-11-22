@@ -1,0 +1,82 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}MyCinema{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'catalog/style.css' %}?v=20261123">
+    <meta name="theme-color" content="#090c09">
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <a class="brand" href="{% url 'home' %}" aria-label="MyCinema — главная">
+
+        <svg class="brand-logo"
+             viewBox="0 0 48 48"
+             xmlns="http://www.w3.org/2000/svg"
+             aria-hidden="true">
+
+            <rect x="2" y="2" width="44" height="44" rx="12"
+                  fill="#172319"
+                  stroke="#526747"
+                  stroke-width="1.2"/>
+
+            <g fill="#B39A70">
+                <rect x="7" y="8" width="3" height="5" rx="1"/>
+                <rect x="7" y="17" width="3" height="5" rx="1"/>
+                <rect x="7" y="26" width="3" height="5" rx="1"/>
+                <rect x="7" y="35" width="3" height="5" rx="1"/>
+
+                <rect x="38" y="8" width="3" height="5" rx="1"/>
+                <rect x="38" y="17" width="3" height="5" rx="1"/>
+                <rect x="38" y="26" width="3" height="5" rx="1"/>
+                <rect x="38" y="35" width="3" height="5" rx="1"/>
+            </g>
+
+            <path d="M14 35V13L24 25L34 13V35"
+                  fill="none"
+                  stroke="#8DA77B"
+                  stroke-width="3.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"/>
+        </svg>
+
+        <span class="brand-name">MyCinema</span>
+
+    </a>
+
+    <nav class="main-nav">
+        <a href="{% url 'home' %}">Главная</a>
+        <a href="{% url 'catalog' %}">Каталог</a>
+        <a href="{% url 'category_catalog' 'film' %}">Фильмы</a>
+        <a href="{% url 'category_catalog' 'series' %}">Сериалы</a>
+        <a href="{% url 'category_catalog' 'anime' %}">Аниме</a>
+        <a href="{% url 'category_catalog' 'cartoon' %}">Мультфильмы</a>
+        <a href="{% url 'watchlist' %}">Буду смотреть</a>
+    </nav>
+
+    <a class="button button-small add-button"
+       href="{% url 'item_create' %}">
+        <span>＋</span> Добавить
+    </a>
+
+</header>
+
+<main class="container">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+    <span class="footer-brand">MYCINEMA</span>
+    <span class="footer-divider">·</span>
+    <span>ТВОЯ ЛИЧНАЯ КИНОТЕКА</span>
+</footer>
+
+</body>
+</html>

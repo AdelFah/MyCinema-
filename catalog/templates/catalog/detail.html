@@ -1,0 +1,169 @@
+
+{% extends "catalog/base.html" %}
+
+{% block title %}{{ item.title }} — MyCinema{% endblock %}
+
+{% block content %}
+
+<a class="back-link" href="{% url 'catalog' %}">← Вернуться в каталог</a>
+
+<section class="detail">
+
+    <div class="detail-poster">
+        {% if item.poster_url %}
+            <img src="{{ item.poster_url }}" alt="Постер {{ item.title }}">
+        {% else %}
+            <div class="poster-placeholder">
+                <span>MY</span>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="detail-content">
+
+        <p class="eyebrow">
+            {{ item.get_category_display }} · {{ item.year|default:"Год не указан" }}
+        </p>
+
+        <h1>{{ item.title }}</h1>
+
+        {% if item.original_title %}
+            <p class="muted">{{ item.original_title }}</p>
+        {% endif %}
+
+        <div class="detail-meta">
+
+            {% if item.countries.exists %}
+                <div class="meta-row">
+                    <span class="meta-label">Страна:</span>
+                    <div class="tag-list">
+                        {% for country in item.countries.all %}
+                            <span>{{ country.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if item.genres.exists %}
+                <div class="meta-row">
+                    <span class="meta-label">Жанр:</span>
+                    <div class="tag-list">
+                        {% for genre in item.genres.all %}
+                            <span>{{ genre.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+
+        <p class="description">
+            {{ item.description|default:"Описание пока не добавлено." }}
+        </p>
+
+        <div class="detail-ratings">
+
+            <div>
+                <small>IMDb</small>
+                <strong>
+                    {% if item.imdb_rating != None %}
+                        {{ item.imdb_rating|floatformat:1 }}/10
+                    {% else %}
+                        —
+                    {% endif %}
+                </strong>
+            </div>
+
+            <div>
+                <small>Кинопоиск</small>
+                <strong>
+                    {% if item.kinopoisk_rating != None %}
+                        {{ item.kinopoisk_rating|floatformat:1 }}/10
+                    {% else %}
+                        —
+                    {% endif %}
+                </strong>
+            </div>
+
+            <div>
+                <small>Моя оценка</small>
+                <strong class="my-rating">
+                    {% if item.personal_rating %}
+                        {% if item.personal_rating <= 4 %}
+                            <span class="rating-red">{{ item.personal_rating }}</span>
+                        {% elif item.personal_rating <= 7 %}
+                            <span class="rating-yellow">{{ item.personal_rating }}</span>
+                        {% else %}
+                            <span class="rating-green">{{ item.personal_rating }}</span>
+                        {% endif %}
+                        <span class="rating-out-of">/10</span>
+                    {% else %}
+                        —
+                    {% endif %}
+                </strong>
+            </div>
+
+        </div>
+
+        <div class="status-section">
+            <p class="meta-label">Статус просмотра</p>
+
+            <div class="status-buttons">
+                {% for value, label in item.Status.choices %}
+                    <form method="POST" action="{% url 'update_item_status' item.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="{{ value }}">
+
+                        <button
+                            type="submit"
+                            class="status-button {% if item.status == value %}active{% endif %}">
+                            {{ label }}
+                        </button>
+                    </form>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if item.seasons %}
+            <p class="muted">
+                Сезонов: {{ item.seasons }} · Серий: {{ item.episodes|default:"—" }}
+            </p>
+        {% endif %}
+
+        <div class="detail-actions">
+
+            <form method="POST" action="{% url 'toggle_watchlist' item.pk %}">
+                {% csrf_token %}
+
+                <button type="submit" class="button watchlist-button">
+                    {% if item.is_watchlisted %}
+                        Убрать из «Буду смотреть»
+                    {% else %}
+                        + Буду смотреть
+                    {% endif %}
+                </button>
+            </form>
+
+            {% if item.watch_url %}
+                <a
+                    class="button watch-button"
+                    href="{{ item.watch_url }}"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    Смотреть фильм ↗
+                </a>
+            {% endif %}
+
+            <a class="button edit-button" href="{% url 'item_edit' item.pk %}">
+                Редактировать
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+{% endblock %}
